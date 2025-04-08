@@ -1,26 +1,26 @@
-name: Create Tag from Project Version
+name: Create Tag and Release
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
 
 permissions:
   contents: write
 
 jobs:
-  tag:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: 🔍 Ler versão do .csproj
         id: version
         run: |
           VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" src/KonverterMap/KonverterMap.csproj)
-          echo "Versão encontrada: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: 🔁 Verificar se tag já existe
@@ -28,16 +28,36 @@ jobs:
         run: |
           git fetch --tags
           if git tag | grep -q "v${{ steps.version.outputs.version }}"; then
-            echo "Tag v${{ steps.version.outputs.version }} já existe. Ignorando."
+            echo "Tag já existe"
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: 🏷️ Criar tag no GitHub
+      - name: 🏷️ Criar tag no repositório
         if: steps.check_tag.outputs.exists == 'false'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git tag v${{ steps.version.outputs.version }}
           git push origin v${{ steps.version.outputs.version }}
+
+      - name: 📝 Gerar changelog (últimos commits)
+        id: changelog
+        run: |
+          CHANGELOG=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0)..HEAD)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Criar release no GitHub
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          body: |
+            🔄 Versão automática publicada
+
+            📋 Mudanças:
+            ${{ steps.changelog.outputs.changelog }}
