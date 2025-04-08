@@ -72,9 +72,11 @@ jobs:
         run: dotnet build Konverter.sln --no-restore --configuration Release
 
       - name: 📦 Empacotar para NuGet
+        if: steps.check_tag.outputs.exists == 'false'
         run: dotnet pack Konverter.sln --no-build --configuration Release
-
+      
       - name: 🚀 Publicar no NuGet
+        if: steps.check_tag.outputs.exists == 'false'
         run: dotnet nuget push **/KonverterMap.*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
       - name: 🗒️ Criar release no GitHub
