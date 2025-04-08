@@ -11,39 +11,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout código
+      - name: 📥 Checkout do código
         uses: actions/checkout@v3
 
-      - name: Instalar .NET
-        uses: actions/setup-dotnet@v3
+      - name: 🛠️ Instalar .NET SDK
+        uses: actions/setup-dotnet@v3.2.0
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restaurar dependências
+      - name: 📦 Restaurar dependências
         run: dotnet restore Konverter.sln
 
-      - name: Compilar projeto
+      - name: 🧱 Compilar projeto
         run: dotnet build Konverter.sln --no-restore --configuration Release
 
-      - name: Executar testes com cobertura
+      - name: 🧪 Executar testes com cobertura
         run: |
           dotnet test Konverter.sln \
             --no-build \
             --configuration Release \
             --collect:"XPlat Code Coverage"
 
-      - name: Instalar ReportGenerator
+      - name: 📈 Instalar ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
-      - name: Gerar relatório de cobertura
+      - name: 📊 Gerar relatório de cobertura
         run: |
           reportgenerator \
             -reports:**/coverage.cobertura.xml \
             -targetdir:coverage-report \
             -reporttypes:HtmlInline_AzurePipelines;Cobertura
 
-      - name: Publicar relatório como artefato
-        uses: actions/upload-artifact@v3
+      - name: 📤 Publicar relatório como artefato
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: coverage-report
           path: coverage-report
