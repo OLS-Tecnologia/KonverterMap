@@ -15,7 +15,7 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # necessário para pegar histórico completo
+          fetch-depth: 0 # necessário para histórico do git
 
       - name: 🛠️ Instalar .NET
         uses: actions/setup-dotnet@v3.2.0
@@ -53,13 +53,17 @@ jobs:
         run: |
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LAST_TAG" ]; then
-            CHANGELOG=$(git log --pretty=format:"- %s")
+            LOG=$(git log --pretty=format:"- %s")
           else
-            CHANGELOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s")
+            LOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s")
           fi
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Escapa os caracteres especiais
+          LOG_ESCAPED="${LOG//'%'/'%25'}"
+          LOG_ESCAPED="${LOG_ESCAPED//$'\\n'/'%0A'}"
+          LOG_ESCAPED="${LOG_ESCAPED//$'\n'/'%0A'}"
+
+          echo "changelog=$LOG_ESCAPED" >> $GITHUB_OUTPUT
 
       - name: 📦 Restaurar dependências
         run: dotnet restore Konverter.sln
