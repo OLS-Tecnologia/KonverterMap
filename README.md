@@ -1,9 +1,17 @@
 # KonverterMap
 
-![NuGet](https://img.shields.io/nuget/v/KonverterMap.svg) 
-![License](https://img.shields.io/github/license/olstecnologia/KonverterMap)
+![NuGet](https://img.shields.io/nuget/v/KonverterMap.svg)
+![Frameworks](https://img.shields.io/badge/.NET-Standard%202.0%20%7C%20.NET%208-blue)
+![License](https://img.shields.io/github/license/olstecnologia/KonverterMap.svg)
+![Build](https://github.com/olstecnologia/KonverterMap/actions/workflows/ci.yml/badge.svg)
 
-> Uma alternativa leve, fluente e gratuita ao AutoMapper para .NET 8+ 🔄
+**KonverterMap** é uma alternativa leve, poderosa e extensível ao AutoMapper.
+
+✔️ Simples  
+✔️ Performático  
+✔️ Open source  
+✔️ Compatível com .NET Standard 2.0 e .NET 8  
+
 
 O **KonverterMap** é uma biblioteca open source de mapeamento de objetos com foco em simplicidade, performance e extensibilidade. Foi criada para atender às necessidades comuns de mapeamento de DTOs, ViewModels e entidades, com uma API fluente e fácil de usar.
 
@@ -42,15 +50,22 @@ dotnet add package KonverterMap
 ```csharp
 Konverter.Instance
     .CreateMap<Usuario, UsuarioDto>()
-    .ForMember(p => p.NomeCompleto, u => $"{u.Nome} {u.Sobrenome}")
-    .Ignore(p => p.Senha)
-    .When(p => p.Email, u => !string.IsNullOrWhiteSpace(u.Email))
-    .ReverseMap();
+    .ForMember(dest => dest.NomeCompleto, src => $"{src.Nome} {src.Sobrenome}")
+    .Ignore(dest => dest.Senha);
 
+var usuario = new Usuario { Nome = "João", Sobrenome = "Silva", Senha = "123" };
 var dto = Konverter.Instance.Map<Usuario, UsuarioDto>(usuario);
 ```
 
 ---
+
+## 🎯 Compatibilidade
+|Framework |	Suporte
+|.NET Standard 2.0 |	✅
+|.NET Framework 4.6.1+ |	✅
+|.NET 6, 7, 8 |	✅
+|Xamarin / Mono |	✅
+
 
 ## 🔄 Comparativo com AutoMapper
 
@@ -62,7 +77,8 @@ var dto = Konverter.Instance.Map<Usuario, UsuarioDto>(usuario);
 | Mapeamento Condicional | ✅                           | ✅                     |
 | Ignore                 | ✅                           | ✅                     |
 | Performance Alta       | ✅                           | ✅                     |
-| Licença Livre          | ❌ (pagamento para empresas) | ✅ (MIT)    |
+| Licença Livre          | ❌ (restrições)              | ✅ (MIT)               |
+| AfterMap / BeforeMap	 | ✅	                       |❌ (em breve)           |
 
 ---
 
@@ -91,7 +107,7 @@ Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICEN
 
 ---
 
-## 🙌 Contribuindo
+## 🙌 Contribuição
 
 Contribuições são muito bem-vindas! Sinta-se à vontade para abrir issues, forks e pull requests.
 

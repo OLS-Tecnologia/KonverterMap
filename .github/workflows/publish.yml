@@ -1,0 +1,31 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v3
+
+      - name: 🛠️ Instalar .NET
+        uses: actions/setup-dotnet@v3.2.0
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: 📦 Restaurar dependências
+        run: dotnet restore Konverter.sln
+
+      - name: 🧱 Compilar em Release
+        run: dotnet build Konverter.sln --no-restore --configuration Release
+
+      - name: 📦 Empacotar para NuGet
+        run: dotnet pack Konverter.sln --no-build --configuration Release
+
+      - name: 🚀 Publicar no NuGet
+        run: dotnet nuget push **/KonverterMap.*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

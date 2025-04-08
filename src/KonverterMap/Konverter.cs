@@ -1,4 +1,5 @@
 ﻿using KonverterMap.Utils;
+using System;
 using System.Collections;
 using System.Reflection;
 
@@ -17,7 +18,8 @@ namespace KonverterMap
         {
             get
             {
-                instance ??= new Konverter();
+                if (instance == null)
+                    instance = new Konverter();
                 return instance;
             }
         }
@@ -57,7 +59,8 @@ namespace KonverterMap
             where TSource : class, new()
             where TDestination : class, new()
         {
-            ArgumentNullException.ThrowIfNull(realObject);
+            if (realObject == null)
+                throw new ArgumentNullException(nameof(realObject));
 
             alreadyInitializedObjects ??= new Dictionary<object, object>();
             dtoObject ??= new TDestination();
@@ -119,7 +122,7 @@ namespace KonverterMap
                         {
                             var elementType = ReflectionUtils.ExtractElementType(currentDtoProperty.PropertyType);
                             var customList = typeof(List<>).MakeGenericType(elementType);
-                            var objectList = (IList)Activator.CreateInstance(customList)!;
+                            var objectList = (IList?)Activator.CreateInstance(customList) ?? throw new InvalidOperationException("Falha ao criar instância.");
                             var sourceList = sourceValue as IList;
 
                             if (sourceList != null)
@@ -146,7 +149,8 @@ namespace KonverterMap
 
         private TDestination GetMapper<TSource, TDestination>(TSource source, TDestination destination)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
 
             Type srcType = typeof(TSource);
             if (ReflectionUtils.IsCollection(srcType))
@@ -174,10 +178,10 @@ namespace KonverterMap
             if (ReflectionUtils.IsCollection(destinationType))
             {
                 Type listType = typeof(List<>).MakeGenericType(ReflectionUtils.ExtractElementType(destinationType));
-                return Activator.CreateInstance(listType)!;
+                return Activator.CreateInstance(listType) ?? throw new InvalidOperationException("Falha ao criar instância.");
             }
 
-            return Activator.CreateInstance(destinationType)!;
+            return Activator.CreateInstance(destinationType) ?? throw new InvalidOperationException("Falha ao criar instância.");
         }
 
         private object ExecuteMap(Type[] types, object item)
