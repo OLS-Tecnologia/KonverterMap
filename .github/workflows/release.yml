@@ -61,3 +61,9 @@ jobs:
 
             📋 Mudanças:
             ${{ steps.changelog.outputs.changelog }}
+            
+      - name: 📦 Empacotar para NuGet
+        run: dotnet pack Konverter.sln --no-build --configuration Release
+
+      - name: 🚀 Publicar no NuGet
+        run: dotnet nuget push **/KonverterMap.*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
