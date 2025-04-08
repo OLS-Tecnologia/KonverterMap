@@ -1,0 +1,15 @@
+site_name: KonverterMap
+site_url: https://olstecnologia.github.io/KonverterMap
+repo_url: https://github.com/olstecnologia/KonverterMap
+theme:
+  name: material
+  language: pt-BR
+  features:
+    - navigation.tabs
+    - navigation.indexes
+
+nav:
+  - Início: index.md
+  - Primeiros passos: getting-started.md
+  - Configuração: configuration.md
+  - Avançado: advanced-usage.md
