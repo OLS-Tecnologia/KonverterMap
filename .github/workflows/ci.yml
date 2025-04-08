@@ -31,6 +31,3 @@ jobs:
             --no-build \
             --configuration Release \
             --collect:"XPlat Code Coverage"
-
-      - name: 📈 Instalar ReportGenerator
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
