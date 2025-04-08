@@ -20,14 +20,14 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restaurar dependências
-        run: dotnet restore KonverterMap.sln
+        run: dotnet restore Konverter.sln
 
       - name: Compilar projeto
-        run: dotnet build KonverterMap.sln --no-restore --configuration Release
+        run: dotnet build Konverter.sln --no-restore --configuration Release
 
       - name: Executar testes com cobertura
         run: |
-          dotnet test KonverterMap.sln \
+          dotnet test Konverter.sln \
             --no-build \
             --configuration Release \
             --collect:"XPlat Code Coverage"
