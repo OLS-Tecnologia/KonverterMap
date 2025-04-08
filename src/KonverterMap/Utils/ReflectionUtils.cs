@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace KonverterMap.Utils
@@ -119,6 +120,21 @@ namespace KonverterMap.Utils
             }
 
             return collection;
+        }
+
+        public static string GetMemberName<T, TMember>(Expression<Func<T, TMember>> expression)
+        {
+            if (expression.Body is MemberExpression memberExpression)
+            {
+                return memberExpression.Member.Name;
+            }
+
+            if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression innerMember)
+            {
+                return innerMember.Member.Name;
+            }
+
+            throw new ArgumentException("Expressão inválida. Esperado acesso direto a uma propriedade.");
         }
     }
 }
