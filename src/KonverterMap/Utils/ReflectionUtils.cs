@@ -23,7 +23,7 @@ namespace KonverterMap.Utils
                 || type == typeof(ulong)
                 || type == typeof(short)
                 || type == typeof(DateTime)
-                || ReflectionUtils.IsNullable(type) && IsPrimitive(Nullable.GetUnderlyingType(type))
+                || (IsNullable(type) && IsPrimitive(Nullable.GetUnderlyingType(type)!))
                 || type.IsEnum;
         }
 
@@ -31,79 +31,72 @@ namespace KonverterMap.Utils
         {
             return type != typeof(byte[]) &&
                 type.IsArray ||
-                (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>) ||
-                                            type.GetGenericTypeDefinition() == typeof(ICollection<>) ||
-                                                type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
-                                                    type.GetGenericTypeDefinition() == typeof(IList<>)
-                )) ||
-                type == typeof(ArrayList) ||
-                typeof(IList).IsAssignableFrom(type) ||
-                typeof(IList<>).IsAssignableFrom(type);
+                (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>)
+                                     || type.GetGenericTypeDefinition() == typeof(ICollection<>)
+                                     || type.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                                     || type.GetGenericTypeDefinition() == typeof(IList<>)))
+                || type == typeof(ArrayList)
+                || typeof(IList).IsAssignableFrom(type)
+                || (type.IsGenericType && typeof(IList<>).IsAssignableFrom(type.GetGenericTypeDefinition()));
         }
 
-        public static MethodInfo CreatePrimitiveConverter(Type sourceType, Type destinationType)
+        public static MethodInfo? CreatePrimitiveConverter(Type sourceType, Type destinationType)
         {
-            Type srcType = null;
-            bool isNullableSource = sourceType.IsGenericType && sourceType.GetGenericTypeDefinition() == typeof(Nullable<>);
-            if (isNullableSource)
-                srcType = sourceType.GetGenericArguments()[0];
-            else
-                srcType = sourceType;
+            Type srcType = IsNullable(sourceType)
+                ? sourceType.GetGenericArguments()[0]
+                : sourceType;
 
-            Type destType = null;
-            bool isNullableDest = destinationType.IsGenericType && destinationType.GetGenericTypeDefinition() == typeof(Nullable<>);
-            if (isNullableDest)
-                destType = destinationType.GetGenericArguments()[0];
-            else
-                destType = destinationType;
+            Type destType = IsNullable(destinationType)
+                ? destinationType.GetGenericArguments()[0]
+                : destinationType;
 
             if (srcType == destType)
                 return null;
 
             if (destType == typeof(string))
-                return typeof(Convert).GetMethod("ToString", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToString", new[] { typeof(object) });
 
             if (destType == typeof(bool))
-                return typeof(Convert).GetMethod("ToBoolean", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToBoolean", new[] { typeof(object) });
 
             if (destType == typeof(int))
-                return typeof(Convert).GetMethod("ToInt32", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToInt32", new[] { typeof(object) });
 
             if (destType == typeof(uint))
-                return typeof(Convert).GetMethod("ToUInt32", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToUInt32", new[] { typeof(object) });
 
             if (destType == typeof(byte))
-                return typeof(Convert).GetMethod("ToByte", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToByte", new[] { typeof(object) });
 
             if (destType == typeof(sbyte))
-                return typeof(Convert).GetMethod("ToSByte", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToSByte", new[] { typeof(object) });
 
             if (destType == typeof(long))
-                return typeof(Convert).GetMethod("ToInt64", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToInt64", new[] { typeof(object) });
 
             if (destType == typeof(ulong))
-                return typeof(Convert).GetMethod("ToUInt64", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToUInt64", new[] { typeof(object) });
 
             if (destType == typeof(short))
-                return typeof(Convert).GetMethod("ToInt16", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToInt16", new[] { typeof(object) });
 
             if (destType == typeof(ushort))
-                return typeof(Convert).GetMethod("ToUInt16", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToUInt16", new[] { typeof(object) });
 
             if (destType == typeof(decimal))
-                return typeof(Convert).GetMethod("ToDecimal", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToDecimal", new[] { typeof(object) });
 
             if (destType == typeof(double))
-                return typeof(Convert).GetMethod("ToDouble", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToDouble", new[] { typeof(object) });
 
             if (destType == typeof(float))
-                return typeof(Convert).GetMethod("ToSingle", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToSingle", new[] { typeof(object) });
 
             if (destType == typeof(DateTime))
-                return typeof(Convert).GetMethod("ToDateTime", new Type[] { typeof(object) });
+                return typeof(Convert).GetMethod("ToDateTime", new[] { typeof(object) });
 
             if (destType == typeof(Guid))
-                return typeof(ReflectionUtils).GetMethod("ConvertToGuid", new Type[] { typeof(object) });
+                return typeof(ReflectionUtils).GetMethod("ConvertToGuid", new[] { typeof(object) });
 
             return null;
         }
@@ -112,16 +105,19 @@ namespace KonverterMap.Utils
         {
             if (collection.IsArray)
             {
-                return collection.GetElementType();
+                return collection.GetElementType()!;
             }
+
             if (collection == typeof(ArrayList))
             {
                 return typeof(object);
             }
+
             if (collection.IsGenericType)
             {
                 return collection.GetGenericArguments()[0];
             }
+
             return collection;
         }
     }

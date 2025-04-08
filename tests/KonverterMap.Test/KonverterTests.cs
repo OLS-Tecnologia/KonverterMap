@@ -2,18 +2,18 @@
 {
     public class Usuario
     {
-        public string Nome { get; set; }
-        public string Sobrenome { get; set; }
-        public string Senha { get; set; }
-        public string Email { get; set; }
+        public string? Nome { get; set; }
+        public string? Sobrenome { get; set; }
+        public string? Senha { get; set; }
+        public string? Email { get; set; }
         public DateTime Nascimento { get; set; }
     }
 
     public class UsuarioDto
     {
-        public string NomeCompleto { get; set; }
-        public string Email { get; set; }
-        public string Senha { get; set; }
+        public string? NomeCompleto { get; set; }
+        public string? Email { get; set; }
+        public string? Senha { get; set; }
     }
 
     [TestClass]
