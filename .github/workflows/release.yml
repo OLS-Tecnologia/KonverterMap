@@ -1,4 +1,4 @@
-name: Create Tag and Release
+name: Create Tag, Release and Publish to NuGet
 
 on:
   push:
@@ -15,15 +15,21 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # necessário para pegar histórico completo
+
+      - name: 🛠️ Instalar .NET
+        uses: actions/setup-dotnet@v3.2.0
+        with:
+          dotnet-version: '8.0.x'
 
       - name: 🔍 Ler versão do .csproj
         id: version
         run: |
           VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" src/KonverterMap/KonverterMap.csproj)
+          echo "Versão encontrada: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: 🔁 Verificar se tag já existe
+      - name: 🔁 Verificar se a tag já existe
         id: check_tag
         run: |
           git fetch --tags
@@ -34,7 +40,7 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: 🏷️ Criar tag no repositório
+      - name: 🏷️ Criar tag automaticamente
         if: steps.check_tag.outputs.exists == 'false'
         run: |
           git config user.name "github-actions"
@@ -42,28 +48,38 @@ jobs:
           git tag v${{ steps.version.outputs.version }}
           git push origin v${{ steps.version.outputs.version }}
 
-      - name: 📝 Gerar changelog (últimos commits)
+      - name: 📝 Gerar changelog dos commits
         id: changelog
         run: |
-          CHANGELOG=$(git log --pretty=format:"- %s" $(git describe --tags --abbrev=0)..HEAD)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s")
+          else
+            CHANGELOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s")
+          fi
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: 🚀 Criar release no GitHub
-        if: steps.check_tag.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
-          body: |
-            🔄 Versão automática publicada
+      - name: 📦 Restaurar dependências
+        run: dotnet restore Konverter.sln
 
-            📋 Mudanças:
-            ${{ steps.changelog.outputs.changelog }}
-            
+      - name: 🧱 Compilar projeto
+        run: dotnet build Konverter.sln --no-restore --configuration Release
+
       - name: 📦 Empacotar para NuGet
         run: dotnet pack Konverter.sln --no-build --configuration Release
 
       - name: 🚀 Publicar no NuGet
         run: dotnet nuget push **/KonverterMap.*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+      - name: 🗒️ Criar release no GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          body: |
+            🔄 Versão automática publicada: `v${{ steps.version.outputs.version }}`
+
+            ### 📋 Mudanças:
+            ${{ steps.changelog.outputs.changelog }}
