@@ -8,9 +8,9 @@ namespace KonverterMap
     {
         #region Properties
 
-        private static Konverter instance;
-        private Dictionary<object, object> mappedTypes;
-        private Dictionary<object, object> ignoredMembers;
+        private static Konverter? instance;
+        private Dictionary<object, object> mappedTypes = new();
+        private Dictionary<object, object> ignoredMembers = new();
         private Dictionary<(Type, Type, string), Delegate> customMappings = new();
         private HashSet<(Type, Type, string)> ignoredProperties = new();
         private Dictionary<(Type, Type, string), Func<object, bool>> conditionalMappings = new();
@@ -61,8 +61,8 @@ namespace KonverterMap
 
         private TDestination MapObject<TSource, TDestination>(
             TSource realObject,
-            TDestination dtoObject = default,
-            Dictionary<object, object> alreadyInitializedObjects = null,
+            TDestination? dtoObject = default,
+            Dictionary<object, object>? alreadyInitializedObjects = null,
             bool shouldMapInnerEntities = true)
             where TSource : class, new()
             where TDestination : class, new()
@@ -95,7 +95,7 @@ namespace KonverterMap
                     continue;
                 }
 
-                PropertyInfo sourceProperty = sourceType.GetProperty(currentDtoProperty.Name);
+                PropertyInfo? sourceProperty = sourceType.GetProperty(currentDtoProperty.Name);
                 if (sourceProperty == null || !currentDtoProperty.CanWrite)
                     continue;
 
@@ -130,13 +130,13 @@ namespace KonverterMap
                         if (MappedTypes.ContainsKey(sourceProperty.PropertyType.GetGenericArguments()[0]))
                         {
                             Type customList = typeof(List<>).MakeGenericType(ReflectionUtils.ExtractElementType(currentDtoProperty.PropertyType));
-                            IList objectList = (IList)Activator.CreateInstance(customList);
-                            IList copyfrom = (IList)sourceProperty.GetValue(realObject, null);
+                            IList? objectList = (IList?)Activator.CreateInstance(customList);
+                            IList? copyfrom = (IList?)sourceProperty.GetValue(realObject, null);
 
-                            for (int y = 0; y < copyfrom.Count; y++)
+                            for (int y = 0; y < copyfrom?.Count; y++)
                             {
                                 object mapToObject = mappedTypes[sourceProperty.PropertyType.GetGenericArguments()[0]];
-                                objectList.Add(ExecuteMap(new Type[] { sourceProperty.PropertyType.GetGenericArguments()[0], (Type)mapToObject }, copyfrom[y]));
+                                objectList?.Add(ExecuteMap(new Type[] { sourceProperty.PropertyType.GetGenericArguments()[0], (Type)mapToObject }, copyfrom[y]));
                             }
 
                             currentDtoProperty.SetValue(dtoObject, objectList);
@@ -152,7 +152,7 @@ namespace KonverterMap
             return dtoObject;
         }
 
-        private TDestination GetMapper<TSource, TDestination>(TSource source, TDestination destination)
+        private TDestination? GetMapper<TSource, TDestination>(TSource source, TDestination destination)
         {
             if (source == null)
                 throw new ArgumentNullException("O objeto a ser mapeado não pode ser nulo.");
@@ -160,13 +160,13 @@ namespace KonverterMap
             Type srcType = typeof(TSource);
             if (ReflectionUtils.IsCollection(srcType))
             {
-                IList destinationList = (IList)destination;
+                IList? destinationList = (IList?)destination;
                 IList copyfrom = (IList)source;
 
                 for (int i = 0; i < copyfrom.Count; i++)
-                    destinationList.Add(ExecuteMap(new Type[] { ReflectionUtils.ExtractElementType(srcType), ReflectionUtils.ExtractElementType(typeof(TDestination)) }, copyfrom[i]));
+                    destinationList?.Add(ExecuteMap(new Type[] { ReflectionUtils.ExtractElementType(srcType), ReflectionUtils.ExtractElementType(typeof(TDestination)) }, copyfrom[i]));
 
-                destination = (TDestination)destinationList;
+                destination = (TDestination)destinationList!;
             }
             else
                 destination = (TDestination)ExecuteMap(new Type[] { ReflectionUtils.ExtractElementType(srcType), ReflectionUtils.ExtractElementType(typeof(TDestination)) }, source);
@@ -174,22 +174,22 @@ namespace KonverterMap
             return destination;
         }
 
-        private static object GetDestination(Type destinationType)
+        private static object? GetDestination(Type destinationType)
         {
             if (ReflectionUtils.IsCollection(destinationType))
             {
                 Type ListType = typeof(List<>).MakeGenericType(ReflectionUtils.ExtractElementType(destinationType));
-                IList destinationList = (IList)Activator.CreateInstance(ListType);
+                IList? destinationList = (IList?)Activator.CreateInstance(ListType);
                 return destinationList;
             }
             else
             {
-                object destination = Activator.CreateInstance(destinationType);
+                object? destination = Activator.CreateInstance(destinationType);
                 return destination;
             }
         }
 
-        private object ExecuteMap(Type[] types, object item)
+        private object? ExecuteMap(Type[] types, object item)
         {
             MethodInfo method = GetType().GetMethod("MapObject", BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(types);
             var objects = new object[] {
@@ -224,9 +224,9 @@ namespace KonverterMap
             return CreateMap<TDestination, TSource>();
         }
 
-        public TDestination Map<TSource, TDestination>(TSource source)
+        public TDestination? Map<TSource, TDestination>(TSource source)
         {
-            return GetMapper(source, (TDestination)GetDestination(typeof(TDestination)));
+            return GetMapper(source, (TDestination?)GetDestination(typeof(TDestination)));
         }
 
         #endregion

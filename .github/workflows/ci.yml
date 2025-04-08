@@ -34,10 +34,3 @@ jobs:
 
       - name: 📈 Instalar ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
-
-      - name: 📊 Gerar relatório de cobertura
-        run: |
-          reportgenerator \
-            -reports:**/coverage.cobertura.xml \
-            -targetdir:coverage-report \
-            -reporttypes:HtmlInline_AzurePipelines;Cobertura
