@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KonverterMap\KonverterMap.csproj" />
+    <ProjectReference Include="..\..\src\KonverterMap\KonverterMap.csproj" />
   </ItemGroup>
 
 </Project>
