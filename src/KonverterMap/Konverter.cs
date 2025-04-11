@@ -59,6 +59,7 @@ namespace KonverterMap
             where TSource : class, new()
             where TDestination : class, new()
         {
+
             if (realObject == null)
                 throw new ArgumentNullException(nameof(realObject));
 
@@ -92,56 +93,73 @@ namespace KonverterMap
                     continue;
 
                 var sourceValue = sourceProperty.GetValue(realObject);
+
                 if (MappedTypes.ContainsKey(sourceProperty.PropertyType) && shouldMapInnerEntities)
                 {
                     var mapToObject = mappedTypes[sourceProperty.PropertyType];
-                    if (sourceValue != null)
-                    {
-                        if (alreadyInitializedObjects.TryGetValue(sourceValue, out var cached))
-                        {
-                            currentDtoProperty.SetValue(dtoObject, cached);
-                        }
-                        else
-                        {
-                            alreadyInitializedObjects[sourceValue] = null!;
-                            var newValue = ExecuteMap(new[] { sourceProperty.PropertyType, (Type)mapToObject }, sourceValue);
-                            currentDtoProperty.SetValue(dtoObject, newValue);
-                            alreadyInitializedObjects[sourceValue] = newValue;
-                        }
-                    }
-                    else
+
+                    if (sourceValue == null)
                     {
                         currentDtoProperty.SetValue(dtoObject, null);
+                        continue;
                     }
-                }
-                else
-                {
-                    if (ReflectionUtils.IsCollection(sourceProperty.PropertyType))
-                    {
-                        if (MappedTypes.ContainsKey(sourceProperty.PropertyType.GetGenericArguments()[0]))
-                        {
-                            var elementType = ReflectionUtils.ExtractElementType(currentDtoProperty.PropertyType);
-                            var customList = typeof(List<>).MakeGenericType(elementType);
-                            var objectList = (IList?)Activator.CreateInstance(customList) ?? throw new InvalidOperationException("Falha ao criar instância.");
-                            var sourceList = sourceValue as IList;
 
-                            if (sourceList != null)
+                    if (alreadyInitializedObjects.TryGetValue(sourceValue, out var cached))
+                    {
+                        currentDtoProperty.SetValue(dtoObject, cached);
+                        continue;
+                    }
+
+                    alreadyInitializedObjects[sourceValue] = null!;
+                    var newValue = ExecuteMap(new[] { sourceProperty.PropertyType, (Type)mapToObject }, sourceValue);
+                    currentDtoProperty.SetValue(dtoObject, newValue);
+                    alreadyInitializedObjects[sourceValue] = newValue;
+                    continue;
+                }
+
+                if (ReflectionUtils.IsCollection(sourceProperty.PropertyType))
+                {
+                    if (MappedTypes.ContainsKey(sourceProperty.PropertyType.GetGenericArguments()[0]))
+                    {
+                        var elementType = ReflectionUtils.ExtractElementType(currentDtoProperty.PropertyType);
+                        var customList = typeof(List<>).MakeGenericType(elementType);
+                        var objectList = (IList)Activator.CreateInstance(customList)!;
+                        var sourceList = sourceValue as IList;
+
+                        if (sourceList != null)
+                        {
+                            foreach (var item in sourceList)
                             {
-                                foreach (var item in sourceList)
+                                if (item == null)
+                                {
+                                    objectList.Add(null);
+                                    continue;
+                                }
+
+                                if (alreadyInitializedObjects.TryGetValue(item, out var cached))
+                                {
+                                    objectList.Add(cached);
+                                }
+                                else
                                 {
                                     var mapToObject = mappedTypes[sourceProperty.PropertyType.GetGenericArguments()[0]];
-                                    objectList.Add(ExecuteMap(new[] { sourceProperty.PropertyType.GetGenericArguments()[0], (Type)mapToObject }, item));
+                                    alreadyInitializedObjects[item] = null!;
+                                    var mappedItem = ExecuteMap(new[] {
+                                        sourceProperty.PropertyType.GetGenericArguments()[0],
+                                        (Type)mapToObject
+                                    }, item);
+                                    objectList.Add(mappedItem);
+                                    alreadyInitializedObjects[item] = mappedItem;
                                 }
                             }
-
-                            currentDtoProperty.SetValue(dtoObject, objectList);
                         }
-                    }
-                    else
-                    {
-                        currentDtoProperty.SetValue(dtoObject, sourceValue);
+
+                        currentDtoProperty.SetValue(dtoObject, objectList);
+                        continue;
                     }
                 }
+
+                currentDtoProperty.SetValue(dtoObject, sourceValue);
             }
 
             return dtoObject;
