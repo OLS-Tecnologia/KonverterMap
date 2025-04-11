@@ -4,6 +4,15 @@ Todas as alterações feitas neste projeto estão listadas abaixo.
 
 ---
 
+## 6bec25e - 2025-04-11
+- Merge pull request #4 from OLS-Tecnologia/AjusteMapeamentoRecursivo
+
+## df16a5a - 2025-04-11
+- Melhoria no tratamento de listas nulas para mapeamentos recursivos evitando o erro index out of bounds.
+
+## fca4f56 - 2025-04-08
+- 🔄 Atualiza changelog da documentação
+
 ## 8f1306f - 2025-04-08
 - Merge pull request #3 from OLS-Tecnologia/Documentacao
 
