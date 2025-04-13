@@ -1,7 +1,20 @@
 # ReverseMap
 
-Registers a reverse mapping from destination to source.
+`.ReverseMap()` automatically registers the reverse mapping, inverting source and destination types.
+
+---
+
+### ✅ Example
 
 ```csharp
-.CreateMap<User, UserDto>().ReverseMap();
+Konverter.Instance.CreateMap<User, UserDto>()
+                 .ReverseMap();
 ```
+
+---
+
+### 🔁 Useful for:
+
+- DTO <-> Entity
+- FormModel <-> Model
+- ViewModel <-> Domain
