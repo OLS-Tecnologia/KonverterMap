@@ -50,3 +50,23 @@ Supports multi-level mapping with recursive objects, like:
 Konverter.Instance.CreateMap<User, UserDto>()
     .ForMember(dest => dest.Manager, (src, map) => map.Map<User, UserDto>(src.Manager));
 ```
+
+---
+
+## 🚀 Combined Example with BeforeMap and AfterMap
+
+```csharp
+Konverter.Instance.CreateMap<User, UserDto>()
+    .BeforeMap((src, dest) =>
+    {
+        if (string.IsNullOrWhiteSpace(src.FirstName))
+            src.FirstName = "Anonymous";
+    })
+    .ForMember(dest => dest.FullName, src => $"{src.FirstName} {src.LastName}")
+    .AfterMap((src, dest) =>
+    {
+        dest.Tag = $"Welcome {dest.FullName}!";
+    });
+```
+
+This setup normalizes the source, maps with custom logic, and finalizes with a post-processing step.

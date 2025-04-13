@@ -3,14 +3,24 @@ site_url: https://olstecnologia.github.io/KonverterMap
 repo_url: https://github.com/olstecnologia/KonverterMap
 theme:
   name: material
-  language: pt-BR
+  language: en
   features:
     - navigation.tabs
     - navigation.indexes
 
 nav:
-  - Início: index.md
-  - Primeiros passos: getting-started.md
-  - Configuração: configuration.md
-  - Avançado: advanced-usage.md
-  - Histórico de Versões: changelog.md
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration:
+      - CreateMap: config-create-map.md
+      - ForMember: config-for-member.md
+      - Ignore: config-ignore.md
+      - When: config-when.md
+      - ReverseMap: config-reverse-map.md
+      - BeforeMap: config-before-map.md
+      - AfterMap: config-after-map.md
+  - Real Examples:
+      - User Full Name: exemplo-nome-completo.md
+      - Order List: exemplo-pedidos.md
+      - Recursive Pessoa: exemplo-pessoa-responsavel.md
+  - Changelog: changelog.md

@@ -16,19 +16,21 @@ If both types have properties with the same name and type, the mapping is automa
 
 Define a custom mapping for a specific property.
 
-### 💡 Example 1 – basic logic
+### 💡 Basic Example
 
 ```csharp
 .ForMember(dest => dest.FullName, src => $"{src.FirstName} {src.LastName}")
 ```
 
-### 💡 Example 2 – recursive mapping
+### 💡 Recursive Mapping
 
 ```csharp
-.ForMember(dest => dest.Address, (src, map) => map.Map<Address, AddressDto>(src.Address))
+.ForMember(dest => dest.Address, (src, map) =>
+    map.Map<Address, AddressDto>(src.Address)
+)
 ```
 
-### 💡 Example 3 – mapping collections
+### 💡 List Mapping
 
 ```csharp
 .ForMember(dest => dest.Orders, (src, map) =>
@@ -43,7 +45,7 @@ Define a custom mapping for a specific property.
 Skips a property from being mapped.
 
 ```csharp
-.Ignore(dest => dest.InternalCode)
+.Ignore(dest => dest.Password)
 ```
 
 ---
@@ -66,9 +68,46 @@ Registers the reverse mapping automatically.
 Konverter.Instance.CreateMap<User, UserDto>().ReverseMap();
 ```
 
-This is equivalent to:
+Equivalent to:
 
 ```csharp
 Konverter.Instance.CreateMap<User, UserDto>();
 Konverter.Instance.CreateMap<UserDto, User>();
 ```
+
+---
+
+## 🧩 BeforeMap
+
+Executes a function before the mapping starts.
+
+```csharp
+.BeforeMap((src, dest) =>
+{
+    if (string.IsNullOrWhiteSpace(src.FirstName))
+        src.FirstName = "Unknown";
+});
+```
+
+Useful for:
+- Normalizing data
+- Assigning default values
+- Preparing data structures
+
+---
+
+## 🎯 AfterMap
+
+Executes a function after the mapping is completed.
+
+```csharp
+.AfterMap((src, dest) =>
+{
+    dest.FullName = $"{src.FirstName} {src.LastName}";
+});
+```
+
+Useful for:
+- Concatenating mapped values
+- Populating derived fields
+- Final adjustments
