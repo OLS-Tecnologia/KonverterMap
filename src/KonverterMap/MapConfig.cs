@@ -26,4 +26,15 @@ public class MapConfig<TSource, TDestination>
 
         return this;
     }
+    public MapConfig<TSource, TDestination> BeforeMap(Action<TSource, TDestination> action)
+    {
+        konverter.RegisterBeforeMap(action);
+        return this;
+    }
+
+    public MapConfig<TSource, TDestination> AfterMap(Action<TSource, TDestination> action)
+    {
+        konverter.RegisterAfterMap(action);
+        return this;
+    }
 }
