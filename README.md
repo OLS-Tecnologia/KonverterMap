@@ -78,7 +78,7 @@ var dto = Konverter.Instance.Map<Usuario, UsuarioDto>(usuario);
 | Ignore                 | ✅                           | ✅                     |
 | Performance Alta       | ✅                           | ✅                     |
 | Licença Livre          | ❌ (restrições)              | ✅ (MIT)               |
-| AfterMap / BeforeMap	 | ✅	                       |❌ (em breve)           |
+| AfterMap / BeforeMap	 | ✅	                       |✅            |
 
 ---
 
