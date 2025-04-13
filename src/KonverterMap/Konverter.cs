@@ -13,6 +13,8 @@ namespace KonverterMap
         private readonly Dictionary<(Type, Type, string), Delegate> customMappings = new();
         private readonly HashSet<(Type, Type, string)> ignoredProperties = new();
         private readonly Dictionary<(Type, Type, string), Func<object, bool>> conditionalMappings = new();
+        private readonly Dictionary<(Type, Type), Action<object, object>> beforeMaps = new();
+        private readonly Dictionary<(Type, Type), Action<object, object>> afterMaps = new();
 
         public static Konverter Instance
         {
@@ -65,6 +67,12 @@ namespace KonverterMap
 
             alreadyInitializedObjects ??= new Dictionary<object, object>();
             dtoObject ??= new TDestination();
+
+            // Executa BeforeMap (se houver)
+            if (beforeMaps.TryGetValue((typeof(TSource), typeof(TDestination)), out var beforeAction))
+            {
+                beforeAction(realObject, dtoObject);
+            }
 
             var sourceType = typeof(TSource);
             var destinationType = typeof(TDestination);
@@ -162,6 +170,12 @@ namespace KonverterMap
                 currentDtoProperty.SetValue(dtoObject, sourceValue);
             }
 
+            // Executa AfterMap (se houver)
+            if (afterMaps.TryGetValue((typeof(TSource), typeof(TDestination)), out var afterAction))
+            {
+                afterAction(realObject, dtoObject);
+            }
+
             return dtoObject;
         }
 
@@ -209,6 +223,16 @@ namespace KonverterMap
 
             var args = new object[] { item, null!, new Dictionary<object, object>(), true };
             return method.Invoke(this, args)!;
+        }
+
+        internal void RegisterBeforeMap<TSource, TDestination>(Action<TSource, TDestination> action)
+        {
+            beforeMaps[(typeof(TSource), typeof(TDestination))] = (src, dest) => action((TSource)src, (TDestination)dest);
+        }
+
+        internal void RegisterAfterMap<TSource, TDestination>(Action<TSource, TDestination> action)
+        {
+            afterMaps[(typeof(TSource), typeof(TDestination))] = (src, dest) => action((TSource)src, (TDestination)dest);
         }
 
         public MapConfig<TSource, TDestination> CreateMap<TSource, TDestination>()
