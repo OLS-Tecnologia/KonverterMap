@@ -4,6 +4,21 @@ Todas as alterações feitas neste projeto estão listadas abaixo.
 
 ---
 
+## 035976c - 2025-04-13
+- Merge pull request #6 from OLS-Tecnologia/BeforeAfterMap
+
+## 65bb8f5 - 2025-04-13
+- Atualização da documentação.
+
+## 6616d9c - 2025-04-13
+- Merge pull request #5 from OLS-Tecnologia/BeforeAfterMap
+
+## 7ec2572 - 2025-04-13
+- Criação dos métodos before e after map no projeto.
+
+## db13667 - 2025-04-11
+- 🔄 Atualiza changelog da documentação
+
 ## 6bec25e - 2025-04-11
 - Merge pull request #4 from OLS-Tecnologia/AjusteMapeamentoRecursivo
 
