@@ -4,6 +4,27 @@ Todas as alterações feitas neste projeto estão listadas abaixo.
 
 ---
 
+## 02ada6d - 2025-04-15
+- Merge pull request #8 from OLS-Tecnologia/MelhoriaReverseMap
+
+## 5c5eeb3 - 2025-04-15
+- Ajuste da versão
+
+## 400acde - 2025-04-15
+- Melhoria no ReverseMap para que ele observe os detalhes de mapeamento aplicados e os aplique também nos casos reversos.
+
+## db8c9f6 - 2025-04-13
+- Merge pull request #7 from OLS-Tecnologia/BeforeAfterMap
+
+## a5369e9 - 2025-04-13
+- Atualização da documentação.
+
+## dc58522 - 2025-04-13
+- Update README.md
+
+## 0c39908 - 2025-04-13
+- 🔄 Atualiza changelog da documentação
+
 ## 035976c - 2025-04-13
 - Merge pull request #6 from OLS-Tecnologia/BeforeAfterMap
 
