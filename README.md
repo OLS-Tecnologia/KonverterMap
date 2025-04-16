@@ -1,3 +1,4 @@
+
 # KonverterMap
 
 ![NuGet](https://img.shields.io/nuget/v/KonverterMap.svg)
@@ -12,8 +13,8 @@
 ✔️ Open source  
 ✔️ Compatível com .NET Standard 2.0 e .NET 8  
 
-
-O **KonverterMap** é uma biblioteca open source de mapeamento de objetos com foco em simplicidade, performance e extensibilidade. Foi criada para atender às necessidades comuns de mapeamento de DTOs, ViewModels e entidades, com uma API fluente e fácil de usar.
+> 📘 Acesse a documentação completa (em inglês):  
+> https://ols-tecnologia.github.io/KonverterMap/
 
 ---
 
@@ -24,7 +25,10 @@ O **KonverterMap** é uma biblioteca open source de mapeamento de objetos com fo
 - `Ignore(...)` para propriedades específicas
 - `When(...)` para mapeamento condicional
 - `ReverseMap()` para gerar o mapeamento inverso
+- `BeforeMap(...)` e `AfterMap(...)`
+- `MapFrom(...)` com suporte a recursividade
 - Suporte a coleções (`List<T>`, `IEnumerable<T>`, etc)
+- Mapeamento automático mesmo sem configuração prévia
 - Sem reflexão pesada ou uso de IL — performance previsível e legível
 
 ---
@@ -60,25 +64,29 @@ var dto = Konverter.Instance.Map<Usuario, UsuarioDto>(usuario);
 ---
 
 ## 🎯 Compatibilidade
-|Framework |	Suporte
-|.NET Standard 2.0 |	✅
-|.NET Framework 4.6.1+ |	✅
-|.NET 6, 7, 8 |	✅
-|Xamarin / Mono |	✅
 
+| Framework            | Suporte |
+|----------------------|---------|
+| .NET Standard 2.0    | ✅      |
+| .NET Framework 4.6.1+| ✅      |
+| .NET 6, 7, 8         | ✅      |
+| Xamarin / Mono       | ✅      |
+
+---
 
 ## 🔄 Comparativo com AutoMapper
 
-| Recurso                | AutoMapper                    | KonverterMap ✅        |
-|------------------------|-------------------------------|------------------------|
-| API Fluente            | ✅                           | ✅                     |
-| ForMember com Lambda   | ✅                           | ✅                     |
-| ReverseMap             | ✅                           | ✅                     |
-| Mapeamento Condicional | ✅                           | ✅                     |
-| Ignore                 | ✅                           | ✅                     |
-| Performance Alta       | ✅                           | ✅                     |
-| Licença Livre          | ❌ (restrições)              | ✅ (MIT)               |
-| AfterMap / BeforeMap	 | ✅	                       |✅            |
+| Recurso                | AutoMapper | KonverterMap ✅ |
+|------------------------|------------|------------------|
+| API Fluente            | ✅         | ✅               |
+| ForMember com Lambda   | ✅         | ✅               |
+| ReverseMap             | ✅         | ✅               |
+| Mapeamento Condicional | ✅         | ✅               |
+| Ignore                 | ✅         | ✅               |
+| BeforeMap / AfterMap   | ✅         | ✅               |
+| MapFrom com recursão   | ✅         | ✅               |
+| Mapeamento implícito   | ❌         | ✅               |
+| Licença Livre          | ❌         | ✅ (MIT)         |
 
 ---
 
@@ -96,21 +104,22 @@ KonverterMap.sln
 ## 🧪 Testes e Performance
 
 - Testes automatizados com MSTest
-- Teste de performance com 100 mil objetos
-- Suporte a cobertura de código com Coverlet + ReportGenerator
+- Testes de performance com grandes volumes (100 mil objetos)
 
 ---
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está licenciado sob a Licença MIT.  
+Consulte o arquivo [LICENSE](LICENSE) para mais informações.
 
 ---
 
 ## 🙌 Contribuição
 
-Contribuições são muito bem-vindas! Sinta-se à vontade para abrir issues, forks e pull requests.
+Contribuições são muito bem-vindas!  
+Sinta-se à vontade para abrir issues, forks e pull requests.
 
 ---
 
-Criado com 💙 por [OLS Tecnologia](https://www.olstecnologia.com.br) e [Fábio de Oliveira Santos](https://github.com/olstecnologia).
+Criado com 💙 por [OLS Tecnologia](https://www.olstecnologia.com.br) e [Fábio de Oliveira Santos](https://github.com/OLS-Tecnologia).
