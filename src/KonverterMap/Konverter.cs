@@ -15,6 +15,7 @@ namespace KonverterMap
         private readonly Dictionary<(Type, Type, string), Func<object, bool>> conditionalMappings = new();
         private readonly Dictionary<(Type, Type), Action<object, object>> beforeMaps = new();
         private readonly Dictionary<(Type, Type), Action<object, object>> afterMaps = new();
+        private readonly Dictionary<(Type, Type), List<Action>> _typeConfigurations = new();
 
         public static Konverter Instance
         {
@@ -53,6 +54,25 @@ namespace KonverterMap
             conditionalMappings[key] = condition;
         }
 
+        internal void StoreConfig<TSource, TDestination>(Action<MapConfig<TSource, TDestination>> config)
+            where TSource : new()
+            where TDestination : new()
+        {
+            var key = (typeof(TSource), typeof(TDestination));
+
+            if (!_typeConfigurations.TryGetValue(key, out var actions))
+            {
+                actions = new List<Action>();
+                _typeConfigurations[key] = actions;
+            }
+
+            actions.Add(() =>
+            {
+                var cfg = new MapConfig<TSource, TDestination>(this);
+                config(cfg);
+            });
+        }
+
         private TDestination MapObject<TSource, TDestination>(
             TSource realObject,
             TDestination? dtoObject = null,
@@ -71,7 +91,7 @@ namespace KonverterMap
             // Executa BeforeMap (se houver)
             if (beforeMaps.TryGetValue((typeof(TSource), typeof(TDestination)), out var beforeAction))
             {
-                beforeAction(realObject, dtoObject);
+                beforeAction?.Invoke(realObject, dtoObject);
             }
 
             var sourceType = typeof(TSource);
@@ -235,13 +255,25 @@ namespace KonverterMap
             afterMaps[(typeof(TSource), typeof(TDestination))] = (src, dest) => action((TSource)src, (TDestination)dest);
         }
 
-        public MapConfig<TSource, TDestination> CreateMap<TSource, TDestination>()
+        public MapConfig<TSource, TDestination> CreateMap<TSource, TDestination>(bool reverse = false)
             where TSource : new()
             where TDestination : new()
         {
             if (!MappedTypes.ContainsKey(typeof(TSource)))
             {
                 MappedTypes[typeof(TSource)] = typeof(TDestination);
+            }
+
+            if (reverse)
+            {
+                var originalKey = (typeof(TDestination), typeof(TSource));
+                if (_typeConfigurations.TryGetValue(originalKey, out var configs))
+                {
+                    foreach (var config in configs)
+                    {
+                        config();
+                    }
+                }
             }
 
             return new MapConfig<TSource, TDestination>(this);
