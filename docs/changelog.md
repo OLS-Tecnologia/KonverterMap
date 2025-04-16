@@ -4,6 +4,24 @@ Todas as alterações feitas neste projeto estão listadas abaixo.
 
 ---
 
+## 57255b5 - 2025-04-16
+- Merge pull request #9 from OLS-Tecnologia/MapFrom
+
+## dc963f9 - 2025-04-16
+- Merge branch 'master' into MapFrom
+
+## 92d638b - 2025-04-16
+- Ajuste da versão.
+
+## edc13f6 - 2025-04-16
+- Atualização da documentação.
+
+## 8996e64 - 2025-04-16
+- Criação helper MapFrom que permite reutilizar a configuração de outro mapeamento dentro de outra configuração de mapeamento.
+
+## 568d948 - 2025-04-15
+- 🔄 Atualiza changelog da documentação
+
 ## 02ada6d - 2025-04-15
 - Merge pull request #8 from OLS-Tecnologia/MelhoriaReverseMap
 
