@@ -13,7 +13,7 @@
 ✔️ Open source  
 ✔️ Compatível com .NET Standard 2.0 e .NET 8  
 
-> 📘 Acesse a documentação completa (em inglês):  
+> 📘 English docs:  
 > https://ols-tecnologia.github.io/KonverterMap/
 
 ---
