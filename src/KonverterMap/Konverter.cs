@@ -252,11 +252,18 @@ namespace KonverterMap
 
         private object ExecuteMap(Type[] types, object item)
         {
-            var method = GetType().GetMethod("MapObject", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .MakeGenericMethod(types);
+            try
+            {
+                var method = GetType().GetMethod("MapObject", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .MakeGenericMethod(types);
 
-            var args = new object[] { item, null!, new Dictionary<object, object>(), true };
-            return method.Invoke(this, args)!;
+                var args = new object[] { item, null!, new Dictionary<object, object>(), true };
+                return method.Invoke(this, args)!;
+            }
+            catch (TargetInvocationException tie) when (tie.InnerException != null)
+            {
+                throw tie.InnerException;
+            }
         }
 
         internal void RegisterBeforeMap<TSource, TDestination>(Action<TSource, TDestination> action)
