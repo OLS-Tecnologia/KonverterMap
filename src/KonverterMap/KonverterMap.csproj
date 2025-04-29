@@ -5,18 +5,18 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 
-		<Version>1.0.5</Version>
+		<Version>1.0.8</Version>
 		<AssemblyVersion>25.4.9250.0</AssemblyVersion>
 		<FileVersion>25.4.9250.0</FileVersion>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<Authors>Fábio de Oliveira Santos</Authors>
 		<Company>OLS Tecnologia</Company>
-		<Description>Uma alternativa leve e simples ao AutoMapper.</Description>
+		<Description></Description>
 		<PackageId>KonverterMap</PackageId>
 		<PackageTags>mapper;automapper;mapping;dotnet;konverter</PackageTags>
-		<RepositoryUrl>https://github.com/olstecnologia/KonverterMap</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/olstecnologia/KonverterMap</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/ols-tecnologia/KonverterMap</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/ols-tecnologia/KonverterMap</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 </Project>
