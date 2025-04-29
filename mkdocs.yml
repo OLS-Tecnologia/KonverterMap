@@ -19,6 +19,7 @@ nav:
       - ReverseMap: config-reverse-map.md
       - BeforeMap: config-before-map.md
       - AfterMap: config-after-map.md
+      - MapForm: config-mapfrom.md
   - Real Examples:
       - User Full Name: exemplo-nome-completo.md
       - Order List: exemplo-pedidos.md

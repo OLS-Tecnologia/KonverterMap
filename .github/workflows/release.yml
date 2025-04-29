@@ -89,18 +89,3 @@ jobs:
 
             ### 📋 Mudanças:
             ${{ steps.changelog.outputs.changelog }}
-      
-      - name: 📝 Atualizar changelog da documentação
-        if: steps.check_tag.outputs.exists == 'false'
-        run: |
-          echo "# 📋 Changelog" > docs/changelog.md
-          echo -e "\nTodas as alterações feitas neste projeto estão listadas abaixo.\n\n---\n" >> docs/changelog.md
-          git log --pretty=format:'## %h - %ad%n- %s%n' --date=short >> docs/changelog.md
-      
-      - name: 🔄 Commit do changelog.md atualizado
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add docs/changelog.md
-          git commit -m "🔄 Atualiza changelog da documentação"
-          git push
