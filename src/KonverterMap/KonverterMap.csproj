@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<LangVersion>latest</LangVersion>
 
-		<Version>1.0.8</Version>
+		<Version>1.1.0</Version>
 		<AssemblyVersion>25.4.9251.0</AssemblyVersion>
 		<FileVersion>25.4.9251.0</FileVersion>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
