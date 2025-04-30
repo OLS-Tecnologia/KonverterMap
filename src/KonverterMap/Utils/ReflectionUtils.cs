@@ -30,15 +30,19 @@ namespace KonverterMap.Utils
 
         public static bool IsCollection(Type type)
         {
-            return type != typeof(byte[]) &&
-                type.IsArray ||
-                (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>)
-                                     || type.GetGenericTypeDefinition() == typeof(ICollection<>)
-                                     || type.GetGenericTypeDefinition() == typeof(IEnumerable<>)
-                                     || type.GetGenericTypeDefinition() == typeof(IList<>)))
-                || type == typeof(ArrayList)
-                || typeof(IList).IsAssignableFrom(type)
-                || (type.IsGenericType && typeof(IList<>).IsAssignableFrom(type.GetGenericTypeDefinition()));
+            if (type == typeof(string))
+                return false;
+
+            if (type.IsArray)
+                return true;
+
+            if (!type.IsGenericType)
+                return false;
+
+            var genericTypeDef = type.GetGenericTypeDefinition();
+
+            return typeof(IEnumerable).IsAssignableFrom(type) &&
+                   type != typeof(string);
         }
 
         public static MethodInfo? CreatePrimitiveConverter(Type sourceType, Type destinationType)
@@ -104,22 +108,19 @@ namespace KonverterMap.Utils
 
         public static Type ExtractElementType(Type collection)
         {
+            if (!IsCollection(collection))
+                throw new InvalidOperationException($"Type '{collection.Name}' is not a recognized collection.");
+
             if (collection.IsArray)
-            {
                 return collection.GetElementType()!;
-            }
 
             if (collection == typeof(ArrayList))
-            {
                 return typeof(object);
-            }
 
             if (collection.IsGenericType)
-            {
                 return collection.GetGenericArguments()[0];
-            }
 
-            return collection;
+            throw new InvalidOperationException($"Unable to extract element type from '{collection.Name}'.");
         }
 
         public static string GetMemberName<T, TMember>(Expression<Func<T, TMember>> expression)
@@ -134,7 +135,7 @@ namespace KonverterMap.Utils
                 return innerMember.Member.Name;
             }
 
-            throw new ArgumentException("Expressão inválida. Esperado acesso direto a uma propriedade.");
+            throw new ArgumentException("Invalid Expression. Expected direct access to a property.");
         }
     }
 }
