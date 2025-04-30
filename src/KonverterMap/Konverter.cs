@@ -92,6 +92,7 @@ namespace KonverterMap
 
                 alreadyInitializedObjects ??= new Dictionary<object, object>();
                 dtoObject ??= new TDestination();
+                alreadyInitializedObjects[realObject] = dtoObject;
 
                 // Executa BeforeMap (se houver)
                 if (beforeMaps.TryGetValue((typeof(TSource), typeof(TDestination)), out var beforeAction))
@@ -128,27 +129,60 @@ namespace KonverterMap
                     if (sourceProperty == null || !currentDtoProperty.CanWrite)
                         continue;
 
+                    if (sourceProperty?.GetValue(realObject) == realObject)
+                    {
+                        currentDtoProperty.SetValue(dtoObject, dtoObject);
+                        continue;
+                    }
+
                     sourcePropertyType = sourceProperty.PropertyType;
                     var sourceValue = sourceProperty.GetValue(realObject);
 
                     if (MappedTypes.ContainsKey(sourceProperty.PropertyType) && shouldMapInnerEntities)
-                    {
-                        var mapToObject = mappedTypes[sourceProperty.PropertyType];
-
+{
                         if (sourceValue == null)
                         {
                             currentDtoProperty.SetValue(dtoObject, null);
                             continue;
                         }
 
+                        // Se já foi mapeado anteriormente (previne ciclo)
                         if (alreadyInitializedObjects.TryGetValue(sourceValue, out var cached))
                         {
                             currentDtoProperty.SetValue(dtoObject, cached);
                             continue;
                         }
 
-                        alreadyInitializedObjects[sourceValue] = null!;
-                        var newValue = ExecuteMap(new[] { sourceProperty.PropertyType, (Type)mapToObject }, sourceValue);
+                        // Se tipo de origem e destino são idênticos, fazer cópia direta
+                        if (sourceProperty.PropertyType == currentDtoProperty.PropertyType)
+                        {
+                            if (MappedTypes.ContainsKey(sourceProperty.PropertyType))
+                            {
+                                if (alreadyInitializedObjects.TryGetValue(sourceValue, out var cachedobj))
+                                {
+                                    currentDtoProperty.SetValue(dtoObject, cachedobj);
+                                    continue;
+                                }
+
+                                alreadyInitializedObjects[sourceValue] = null!;
+                                var newValueobj = ExecuteMap(new[] {
+                                    sourceProperty.PropertyType,
+                                    currentDtoProperty.PropertyType
+                                }, sourceValue, alreadyInitializedObjects);
+                                currentDtoProperty.SetValue(dtoObject, newValueobj);
+                                alreadyInitializedObjects[sourceValue] = newValueobj;
+                                continue;
+                            }
+
+                            // Tipo igual e não mapeável: cópia direta
+                            currentDtoProperty.SetValue(dtoObject, sourceValue);
+                            continue;
+                        }
+
+                        // Mapeia usando ExecuteMap com controle de ciclo
+                        var mapToObject = MappedTypes[sourceProperty.PropertyType];
+                        alreadyInitializedObjects[sourceValue] = null!; // marca como sendo processado
+                        var newValue = ExecuteMap(new[] { sourceProperty.PropertyType, (Type)mapToObject }, sourceValue, alreadyInitializedObjects);
                         currentDtoProperty.SetValue(dtoObject, newValue);
                         alreadyInitializedObjects[sourceValue] = newValue;
                         continue;
@@ -156,45 +190,61 @@ namespace KonverterMap
 
                     if (ReflectionUtils.IsCollection(sourceProperty.PropertyType))
                     {
-                        if (MappedTypes.ContainsKey(sourceProperty.PropertyType.GetGenericArguments()[0]))
+                        var sourceList = sourceValue as IList;
+                        if (sourceList == null)
                         {
-                            var elementType = ReflectionUtils.ExtractElementType(currentDtoProperty.PropertyType);
-                            var customList = typeof(List<>).MakeGenericType(elementType);
-                            var objectList = (IList)Activator.CreateInstance(customList)!;
-                            var sourceList = sourceValue as IList;
+                            currentDtoProperty.SetValue(dtoObject, null);
+                            continue;
+                        }
 
-                            if (sourceList != null)
+                        var sourceElementType = ReflectionUtils.ExtractElementType(sourceProperty.PropertyType);
+                        var destinationElementType = ReflectionUtils.ExtractElementType(currentDtoProperty.PropertyType);
+
+                        // Se tipos forem iguais, faz cópia direta da lista
+                        if (sourceElementType == destinationElementType)
+                        {
+                            var copiedList = Activator.CreateInstance(typeof(List<>).MakeGenericType(destinationElementType)) as IList;
+                            foreach (var item in sourceList)
                             {
-                                foreach (var item in sourceList)
-                                {
-                                    if (item == null)
-                                    {
-                                        objectList.Add(null);
-                                        continue;
-                                    }
+                                copiedList!.Add(item);
+                            }
 
-                                    if (alreadyInitializedObjects.TryGetValue(item, out var cached))
-                                    {
-                                        objectList.Add(cached);
-                                    }
-                                    else
-                                    {
-                                        var mapToObject = mappedTypes[sourceProperty.PropertyType.GetGenericArguments()[0]];
-                                        alreadyInitializedObjects[item] = null!;
-                                        var mappedItem = ExecuteMap(new[] {
-                                        sourceProperty.PropertyType.GetGenericArguments()[0],
-                                        (Type)mapToObject
-                                    }, item);
-                                        objectList.Add(mappedItem);
-                                        alreadyInitializedObjects[item] = mappedItem;
-                                    }
+                            currentDtoProperty.SetValue(dtoObject, copiedList);
+                            continue;
+                        }
+
+                        // Se tipo estiver mapeado, faz mapeamento item a item com proteção contra ciclo
+                        if (MappedTypes.ContainsKey(sourceElementType))
+                        {
+                            var mapToObject = MappedTypes[sourceElementType];
+                            var customList = typeof(List<>).MakeGenericType(destinationElementType);
+                            var objectList = (IList)Activator.CreateInstance(customList)!;
+
+                            foreach (var item in sourceList)
+                            {
+                                if (item == null)
+                                {
+                                    objectList.Add(null);
+                                    continue;
                                 }
+
+                                if (alreadyInitializedObjects.TryGetValue(item, out var cached))
+                                {
+                                    objectList.Add(cached);
+                                    continue;
+                                }
+
+                                alreadyInitializedObjects[item] = null!;
+                                var mappedItem = ExecuteMap(new[] { sourceElementType, (Type)mapToObject }, item, alreadyInitializedObjects);
+                                objectList.Add(mappedItem);
+                                alreadyInitializedObjects[item] = mappedItem;
                             }
 
                             currentDtoProperty.SetValue(dtoObject, objectList);
                             continue;
                         }
                     }
+
 
                     currentDtoProperty.SetValue(dtoObject, sourceValue);
                 }
@@ -239,38 +289,56 @@ namespace KonverterMap
                 throw new ArgumentNullException(nameof(source));
 
             Type srcType = typeof(TSource);
+            Type dstType = typeof(TDestination);
+
             if (ReflectionUtils.IsCollection(srcType))
             {
                 var destinationList = (IList)(object)destination!;
                 var sourceList = (IList)(object)source!;
 
+                Type srcElementType = ReflectionUtils.ExtractElementType(srcType);
+                Type dstElementType = ReflectionUtils.ExtractElementType(dstType);
+
                 foreach (var item in sourceList)
                 {
-                    destinationList.Add(ExecuteMap(new[] {
-                        ReflectionUtils.ExtractElementType(srcType),
-                        ReflectionUtils.ExtractElementType(typeof(TDestination)) }, item));
+                    var mappedItem = ExecuteMap(new[] { srcElementType, dstElementType }, item);
+                    destinationList.Add(mappedItem);
                 }
 
                 return (TDestination)destinationList;
             }
 
-            return (TDestination)ExecuteMap(new[] {
-                ReflectionUtils.ExtractElementType(srcType),
-                ReflectionUtils.ExtractElementType(typeof(TDestination)) }, source);
+            // Aqui o tipo não é coleção — usamos os próprios tipos diretamente
+            return (TDestination)ExecuteMap(new[] { srcType, dstType }, source);
         }
 
         private static object GetDestination(Type destinationType)
         {
             if (ReflectionUtils.IsCollection(destinationType))
             {
-                Type listType = typeof(List<>).MakeGenericType(ReflectionUtils.ExtractElementType(destinationType));
-                return Activator.CreateInstance(listType) ?? throw new InvalidOperationException("Falha ao criar instância.");
+                Type elementType = ReflectionUtils.ExtractElementType(destinationType);
+                Type listType = typeof(List<>).MakeGenericType(elementType);
+
+                // Garante que a List<T> é atribuível ao tipo esperado
+                if (!destinationType.IsAssignableFrom(listType))
+                {
+                    throw new InvalidOperationException($"The destination type '{destinationType.FullName}' is not compatible with List<{elementType.Name}>.");
+                }
+
+                return Activator.CreateInstance(listType)
+                       ?? throw new InvalidOperationException("Failed to create collection instance.");
             }
 
-            return Activator.CreateInstance(destinationType) ?? throw new InvalidOperationException("Falha ao criar instância.");
+            return Activator.CreateInstance(destinationType)
+                   ?? throw new InvalidOperationException($"Failed to create instance of type '{destinationType.FullName}'.");
         }
 
         private object ExecuteMap(Type[] types, object item)
+        {
+            return ExecuteMap(types, item, new Dictionary<object, object>());
+        }
+
+        private object ExecuteMap(Type[] types, object item, Dictionary<object, object> alreadyInitializedObjects)
         {
             try
             {
