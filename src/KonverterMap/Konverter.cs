@@ -399,5 +399,18 @@ namespace KonverterMap
         {
             return GetMapper(source, (TDestination)GetDestination(typeof(TDestination)));
         }
+
+        public void Reset()
+        {
+            mappedTypes.Clear();
+            ignoredMembers.Clear();
+            customMappings.Clear();
+            ignoredProperties.Clear();
+            conditionalMappings.Clear();
+            beforeMaps.Clear();
+            afterMaps.Clear();
+            _typeConfigurations.Clear();
+        }
+
     }
 }

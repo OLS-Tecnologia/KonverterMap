@@ -6,8 +6,8 @@
 		<LangVersion>latest</LangVersion>
 
 		<Version>1.1.0</Version>
-		<AssemblyVersion>25.4.9251.0</AssemblyVersion>
-		<FileVersion>25.4.9251.0</FileVersion>
+		<AssemblyVersion>25.6.9292.0</AssemblyVersion>
+		<FileVersion>25.6.9292.0</FileVersion>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<Authors>Fábio de Oliveira Santos</Authors>
